@@ -2,9 +2,19 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>画像情報登録・取得</title>
+<title>画像情報取得・登録</title>
 </head>
 <body>
-
+    <h1>画像情報取得・登録</h1>
+    <p th:if="${successMessage}" th:text="${successMessage}"></p>
+    <form th:action="@{/ai-analysis-image}" th:object="${imagePathForm}" method="post">
+      	<div>
+			画像のPath: <input type="text" th:field="*{imagePath}" />
+			<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
+		</div>
+		<div>
+			<input type="submit" value="送信" style="margin-top:10px;" />
+		</div>
+    </form>	
 </body>
 </html>
