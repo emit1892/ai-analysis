@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,15 +16,16 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class AIAnalysisImageService {
-
   private final AIAnalysisLogRepository aiAnalysisLogRepository;
 
   private final RestTemplate restTemplate = new RestTemplate();
 
   // APIリクエストURL
-  private final String url = "http://127.0.0.1:3000/success";
+  private final String url;
 
-  public AIAnalysisImageService(AIAnalysisLogRepository aiAnalysisLogRepository) {
+  public AIAnalysisImageService(@Value("${api.request.url}") String url,
+      AIAnalysisLogRepository aiAnalysisLogRepository) {
+    this.url = url;
     this.aiAnalysisLogRepository = aiAnalysisLogRepository;
   };
 
