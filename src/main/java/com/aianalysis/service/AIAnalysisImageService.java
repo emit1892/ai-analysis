@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import com.aianalysis.model.AIAnalysisImageResult;
 import com.aianalysis.model.AIAnalysisLog;
@@ -17,8 +19,6 @@ import jakarta.transaction.Transactional;
 @Service
 public class AIAnalysisImageService {
   private final AIAnalysisLogRepository aiAnalysisLogRepository;
-
-  private final RestTemplate restTemplate = new RestTemplate();
 
   // APIリクエストURL
   private final String url;
@@ -37,18 +37,22 @@ public class AIAnalysisImageService {
    */
   public AIAnalysisImageResult getAIAnalysisImageInfo(String imagePath) {
 
+    RestClient restClient = RestClient.create(url);
+
     Map<String, String> requestBody = new HashMap<String, String>();
     requestBody.put("image_path", imagePath);
 
     // リクエストのタイムスタンプ
     LocalDateTime requestTimestamp = LocalDateTime.now();
 
-    AIAnalysisImageResult aiAnalysisImageResult = restTemplate.postForObject(url, requestBody,
-        AIAnalysisImageResult.class);
+    // API呼び出し
+    ResponseEntity<AIAnalysisImageResult> response = restClient.post().contentType(MediaType.APPLICATION_JSON)
+        .body(requestBody).retrieve().toEntity(AIAnalysisImageResult.class);
 
     // レスポンスタイムスタンプ
     LocalDateTime responseTimestamp = LocalDateTime.now();
 
+    AIAnalysisImageResult aiAnalysisImageResult = response.getBody();
     aiAnalysisImageResult.setImagePath(imagePath);
     aiAnalysisImageResult.setRequestTimestamp(requestTimestamp);
     aiAnalysisImageResult.setResponseTimestamp(responseTimestamp);
