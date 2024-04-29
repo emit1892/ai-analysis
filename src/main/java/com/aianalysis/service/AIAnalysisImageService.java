@@ -6,26 +6,27 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.aianalysis.model.AIAnalysisImageResult;
 import com.aianalysis.model.AIAnalysisLog;
 import com.aianalysis.repository.AIAnalysisLogRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class AIAnalysisImageService {
-  private final AIAnalysisLogRepository aiAnalysisLogRepository;
 
   // APIリクエストURL
-  private final String url;
+  @Value("${api.request.url}")
+  private String url;
 
-  public AIAnalysisImageService(@Value("${api.request.url}") String url,
-      AIAnalysisLogRepository aiAnalysisLogRepository) {
-    this.url = url;
+  private final AIAnalysisLogRepository aiAnalysisLogRepository;
+
+  public AIAnalysisImageService(AIAnalysisLogRepository aiAnalysisLogRepository) {
     this.aiAnalysisLogRepository = aiAnalysisLogRepository;
   };
 
@@ -34,25 +35,27 @@ public class AIAnalysisImageService {
    * 
    * @param imagePath 画像のファイルパス
    * @return 画像情報取得結果
+   * @throws JsonProcessingException
    */
-  public AIAnalysisImageResult getAIAnalysisImageInfo(String imagePath) {
+  public AIAnalysisImageResult getAIAnalysisImageInfo(String imagePath) throws Exception {
 
     RestClient restClient = RestClient.create(url);
 
     Map<String, String> requestBody = new HashMap<String, String>();
     requestBody.put("image_path", imagePath);
+    ObjectMapper objectMapper = new ObjectMapper();
+    String jsonRequestBody = objectMapper.writeValueAsString(requestBody);
 
     // リクエストのタイムスタンプ
     LocalDateTime requestTimestamp = LocalDateTime.now();
 
     // API呼び出し
-    ResponseEntity<AIAnalysisImageResult> response = restClient.post().contentType(MediaType.APPLICATION_JSON)
-        .body(requestBody).retrieve().toEntity(AIAnalysisImageResult.class);
+    AIAnalysisImageResult aiAnalysisImageResult = restClient.post().contentType(MediaType.APPLICATION_JSON)
+        .body(jsonRequestBody).retrieve().body(AIAnalysisImageResult.class);
 
     // レスポンスタイムスタンプ
     LocalDateTime responseTimestamp = LocalDateTime.now();
 
-    AIAnalysisImageResult aiAnalysisImageResult = response.getBody();
     aiAnalysisImageResult.setImagePath(imagePath);
     aiAnalysisImageResult.setRequestTimestamp(requestTimestamp);
     aiAnalysisImageResult.setResponseTimestamp(responseTimestamp);
