@@ -44,8 +44,6 @@ public class AIAnalysisImageServiceTest {
 
   @Test
   public void リクエストが失敗した場合の画像所属Classを取得する() throws Exception {
-    ReflectionTestUtils.setField(aiAnalysisImageService, "url", "http://127.0.0.1:3000", String.class);
-
     AIAnalysisImageResult aiAnalysisImageResult = aiAnalysisImageService
         .getAIAnalysisImageInfo("/image/d03f1d36ca69348c51aa/c413eac329e1c0d03/error.jpg");
     assertEquals(false, aiAnalysisImageResult.isSuccess());
